@@ -438,4 +438,244 @@ class _MyAppState extends State<MyApp> {
                                         ),
                                       ),
                                     ],
+                                                                     ),
+                                );
+                              }).toList(),
+                            ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: CupertinoButton(
+                              onPressed: () => _addEmailField(setModalState),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(width: 5),
+                                  Icon(CupertinoIcons.add_circled_solid,
+                                      color: CupertinoColors.systemGreen),
+                                  SizedBox(width: 8),
+                                  Text('add email', style: TextStyle(color: CupertinoColors.systemGreen)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          if (_urlControllers.isNotEmpty)
+                            Column(
+                              children: _urlControllers.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                TextEditingController controller = entry.value;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10.0),
+                                  child: Row(
+                                    children: [
+                                      CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        child: Icon(CupertinoIcons.minus_circle_fill, color: CupertinoColors.systemRed),
+                                        onPressed: () => _removeUrlField(setModalState, index),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: CupertinoTextField(
+                                          controller: controller, // ✅ <-- add this
+                                          placeholder: 'url',
+                                          decoration: BoxDecoration(
+                                            color: CupertinoColors.systemGrey.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          padding: EdgeInsets.all(12),
+                                          keyboardType: TextInputType.url,
+                                          onChanged: (value) => setModalState(() {}),
+                                        ),
+
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: CupertinoButton(
+                              onPressed: () => _addUrlField(setModalState),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Icon(CupertinoIcons.add_circled_solid, color: CupertinoColors.systemGreen),
+                                  SizedBox(width: 8),
+                                  Text('add url', style: TextStyle(color: CupertinoColors.systemGreen)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          SizedBox(height: double.maxFinite),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Contacts',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                  ),
+                ],
+              ),
+              SizedBox(height: 15.0),
+              CupertinoTextField(
+                controller: _searchController,
+                placeholder: 'Search',
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                prefix: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(CupertinoIcons.search,
+                      color: CupertinoColors.systemGrey, size: 20),
+                ),
+                suffix: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(CupertinoIcons.mic_fill,
+                      color: CupertinoColors.systemGrey, size: 20),
+                ),
+                onChanged: (value) {
+                  _filterContacts();
+                },
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 9, 10, 9),
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemGrey,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      'JB',
+                      style: TextStyle(
+                          fontSize: 30, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Joseph Basilio',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('My Card',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400, fontSize: 12)),
+                    ],
+                  )
+                ],
+              ),
+              SizedBox(height: 10),
+              Divider(color: CupertinoColors.systemGrey.withOpacity(0.3)),
+              if (_searchController.text.isNotEmpty && filteredContacts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    'TOP NAME MATCHES',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: CupertinoColors.systemGrey,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredContacts.length,
+                  itemBuilder: (context, index) {
+                    final contact = filteredContacts[index];
+                    return Dismissible(
+                      key: UniqueKey(),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        color: CupertinoColors.systemRed,
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Icon(CupertinoIcons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (direction) {
+                        setState(() {
+                          int actualIndex = contacts.indexOf(contact);
+                          if (actualIndex != -1) {
+                            contacts.removeAt(actualIndex);
+                          }
+                          filteredContacts.removeAt(index);
+                          _saveContacts();
+                        });
+                      },
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => Contact(
+                                contactData: contact,
+                                onContactUpdated: (updatedData) {
+                                  final contactIndex = contacts.indexOf(contact);
+                                  if (contactIndex != -1) {
+                                    _updateContact(contactIndex, updatedData);
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(0), // Adjust the radius as needed
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                child: Text(
+                                  (contact['name'] as String).trim().isEmpty
+                                      ? contact['phone'] as String
+                                      : contact['name'] as String,
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                              ),
+                              Divider(
+                                color: CupertinoColors.systemGrey.withOpacity(0.3),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
                             
