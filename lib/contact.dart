@@ -217,3 +217,226 @@ class _ContactState extends State<Contact> {
                       ),
                     ),
                   ),
+
+                                   Positioned(
+                    bottom: 80, // Adjust position above the buttons
+                    child: Text(
+                      _name,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: CupertinoColors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 2.0,
+                            color: CupertinoColors.black.withOpacity(0.3),
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        buildActionButton(
+                          icon: CupertinoIcons.bubble_left_bubble_right_fill,
+                          label: "message",
+                          onTap: () => _launchSMS(context),
+                          size: buttonSize,
+                          labelTextStyle: TextStyle( // Apply shadow to the label
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
+                            color: CupertinoColors.systemGrey2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 1.0,
+                                color: CupertinoColors.black.withOpacity(0.3),
+                                offset: Offset(0, 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                        buildActionButton(
+                          icon: CupertinoIcons.phone_fill,
+                          label: "call",
+                          onTap: () => _launchCall(context),
+                          size: buttonSize,
+                          labelTextStyle: TextStyle( // Apply shadow to the label
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
+                            color: CupertinoColors.systemGrey2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 1.0,
+                                color: CupertinoColors.black.withOpacity(0.3),
+                                offset: Offset(0, 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                        buildActionButton(
+                          icon: CupertinoIcons.video_camera_solid,
+                          label: "video",
+                          onTap: () {},
+                          size: buttonSize,
+                          labelTextStyle: TextStyle( // Apply shadow to the label
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
+                            color: CupertinoColors.systemGrey2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 1.0,
+                                color: CupertinoColors.black.withOpacity(0.3),
+                                offset: Offset(0, 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                        buildActionButton(
+                          icon: CupertinoIcons.mail_solid,
+                          label: "mail",
+                          onTap: () => _launchMail(context),
+                          size: buttonSize,
+                          labelTextStyle: TextStyle( // Apply shadow to the label
+                            fontSize: 13,
+                            fontWeight: FontWeight.w300,
+                            color: CupertinoColors.systemGrey2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 1.0,
+                                color: CupertinoColors.black.withOpacity(0.3),
+                                offset: Offset(0, 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+
+              SizedBox(height: 30),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_phone.isNotEmpty)
+                      for (var phone in _phone)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: buildContactInfoTile(
+                            label: 'mobile',
+                            value: phone,
+                            onTap: () => launchUrl(Uri.parse('tel:$phone')),
+                          ),
+                        ),
+                    if (_email.isNotEmpty)
+                      for (var email in _email)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: buildContactInfoTile(
+                            label: 'home',
+                            value: email,
+                            onTap: () => launchUrl(Uri.parse('mailto:$email')),
+                          ),
+                        ),
+                    if (_url.isNotEmpty)
+                      for (var url in _url)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: buildContactInfoTile(
+                            label: 'url',
+                            value: url,
+                            onTap: () async {
+                              if (url.startsWith('http') || url.startsWith('https')) {
+                                await launchUrl(Uri.parse(url));
+                              } else {
+                                await launchUrl(Uri.parse('http://$url'));
+                              }
+                            },
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    double? size,
+    TextStyle? labelTextStyle, // Added optional TextStyle for the label
+  }) {
+    return Container(
+      width: size,
+      child: Column(
+        children: [
+          CupertinoButton(
+            padding: EdgeInsets.all(10),
+            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(15),
+            child: Icon(icon, color: CupertinoColors.white),
+            onPressed: onTap,
+          ),
+          SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: labelTextStyle ?? TextStyle( // Use provided style or default
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+              color: CupertinoColors.systemGrey2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildContactInfoTile({
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(15, 8, 15, 8),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: CupertinoColors.systemGrey.withOpacity(0.2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: CupertinoColors.systemGrey,
+                )),
+            SizedBox(height: 2),
+            Text(value,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: CupertinoColors.systemBlue,
+                  fontWeight: FontWeight.w500,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
