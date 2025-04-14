@@ -238,3 +238,204 @@ class _MyAppState extends State<MyApp> {
                                 color: _isFormValid() ? CupertinoColors.systemBlue : CupertinoColors.inactiveGray,
                               ),
                             ),
+                           onPressed: _isFormValid()
+                                ? () {
+                              final firstName = _fnameController.text.trim();
+                              final lastName = _lnameController.text.trim();
+                              final phoneNumbers = _phoneControllers
+                                  .map((controller) => controller.text.trim())
+                                  .where((number) => number.isNotEmpty)
+                                  .toList();
+                              final emailAddresses = _emailControllers
+                                  .map((controller) => controller.text.trim())
+                                  .where((email) => email.isNotEmpty)
+                                  .toList();
+                              final urls = _urlControllers
+                                  .map((controller) => controller.text.trim())
+                                  .where((url) => url.isNotEmpty)
+                                  .toList();
+
+                              if (firstName.isNotEmpty || lastName.isNotEmpty || phoneNumbers.isNotEmpty || emailAddresses.isNotEmpty || urls.isNotEmpty) {
+                                setState(() {
+                                  contacts.add({
+                                    "name": "$firstName $lastName".trim(),
+                                    "phone": phoneNumbers,
+                                    "email": emailAddresses,
+                                    "url": urls,
+                                    "photo": _imagePath ?? "assets/default_profile.png",
+                                  });
+
+                                  // Sorting contacts by name
+                                  contacts.sort((a, b) => (a['name'] as String).toLowerCase().compareTo((b['name'] as String).toLowerCase()));
+
+                                  _saveContacts();
+                                  _filterContacts();
+                                });
+
+                                // Clear controllers and reset fields
+                                _fnameController.clear();
+                                _lnameController.clear();
+                                _phoneControllers.clear();
+                                _phoneLabels.clear();
+                                _emailControllers.clear();
+                                _emailLabels.clear();
+                                _urlControllers.clear();
+                                _urlLabels.clear();
+                                _imagePath = null;
+
+                                // Close the modal or form
+                                Navigator.pop(context);
+                              } else {
+                                showCupertinoDialog(
+                                  context: context,
+                                  builder: (BuildContext context) => CupertinoAlertDialog(
+                                    title: const Text('Warning'),
+                                    content: const Text('Please enter at least one contact detail.'),
+                                    actions: <CupertinoDialogAction>[
+                                      CupertinoDialogAction(
+                                        child: const Text('OK'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            }
+                                : null,
+                          )
+
+                        ],
+                      ),
+                      message: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _pickImage(context, setModalState),
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                _imagePath == null
+                                    ? Icon(CupertinoIcons.person_circle_fill, size: 200, color: CupertinoColors.systemGrey)
+                                    : CircleAvatar(
+                                  radius: 100,
+                                  backgroundImage: FileImage(File(_imagePath!)),
+                                ),
+                                if (_imagePath == null)
+                                  Positioned(
+                                    bottom: -20,
+                                    child: CupertinoButton(
+                                      child: Text('Add Photo', style: TextStyle(fontSize: 15, color: CupertinoColors.white)),
+                                      onPressed: () => _pickImage(context, setModalState),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          CupertinoTextField(
+                            controller: _fnameController,
+                            placeholder: 'First name',
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.1),
+                            ),
+                            padding: EdgeInsets.all(12),
+                            clearButtonMode: OverlayVisibilityMode.editing,
+                            onChanged: (value) => setModalState(() {}),
+                          ),
+                          CupertinoTextField(
+                            controller: _lnameController,
+                            placeholder: 'Last name',
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.1),
+                            ),
+                            padding: EdgeInsets.all(12),
+                            clearButtonMode: OverlayVisibilityMode.editing,
+                            onChanged: (value) => setModalState(() {}),
+                          ),
+                          SizedBox(height: 10),
+                          if (_phoneControllers.isNotEmpty)
+                            Column(
+                              children: _phoneControllers.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                TextEditingController controller = entry.value;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10.0),
+                                  child: Row(
+                                    children: [
+                                      CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        child: Icon(CupertinoIcons.minus_circle_fill, color: CupertinoColors.systemRed),
+                                        onPressed: () => _removePhoneField(setModalState, index),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: CupertinoTextField(
+                                          controller: controller,
+                                          placeholder: 'Phone number',
+                                          decoration: BoxDecoration(
+                                            color: CupertinoColors.systemGrey.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          padding: EdgeInsets.all(12),
+                                          keyboardType: TextInputType.phone,
+                                          onChanged: (value) {
+                                            _formatPhoneNumber(controller, value, setModalState);
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: CupertinoButton(
+                              onPressed: () => _addPhoneField(setModalState),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(width: 5),
+                                  Icon(CupertinoIcons.add_circled_solid,
+                                      color: CupertinoColors.systemGreen),
+                                  SizedBox(width: 8),
+                                  Text('add phone', style: TextStyle(color: CupertinoColors.systemGreen)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          if (_emailControllers.isNotEmpty)
+                            Column(
+                              children: _emailControllers.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                TextEditingController controller = entry.value;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10.0),
+                                  child: Row(
+                                    children: [
+                                      CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        child: Icon(CupertinoIcons.minus_circle_fill, color: CupertinoColors.systemRed),
+                                        onPressed: () => _removeEmailField(setModalState, index),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: CupertinoTextField(
+                                          controller: controller,
+                                          placeholder: 'email',
+                                          decoration: BoxDecoration(
+                                            color: CupertinoColors.systemGrey.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          padding: EdgeInsets.all(12),
+                                          keyboardType: TextInputType.emailAddress,
+                                          onChanged: (value) => setModalState(() {}),
+                                        ),
+                                      ),
+                                    ],
+                            
