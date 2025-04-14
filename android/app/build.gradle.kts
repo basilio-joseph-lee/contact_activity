@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.contact_activity"
+    namespace = "com.devops.contact_activity"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.contact_activity"
+        applicationId = "com.devops.contact_activity"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
