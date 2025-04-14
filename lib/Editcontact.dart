@@ -199,3 +199,156 @@ class _EditContactState extends State<EditContact> {
       }
     });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.black,
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: CupertinoColors.black,
+        middle: Text('Edit Contact',
+            style: TextStyle(color: CupertinoColors.white)),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Text('Cancel',
+              style: TextStyle(color: CupertinoColors.activeBlue)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Text('Done',
+              style: TextStyle(color: CupertinoColors.activeBlue)),
+          onPressed: () {
+            final firstName = _firstNameController.text.trim();
+            final lastName = _lastNameController.text.trim();
+            final phoneNumbers = _phoneControllers
+                .map((controller) => _formatPhoneNumber(controller.text.trim()))
+                .where((number) => number.isNotEmpty) // Don't add blank numbers
+                .toList();
+            final emailAddresses = _emailControllers
+                .map((controller) => controller.text.trim())
+                .where((email) => email.isNotEmpty) // Don't add blank emails
+                .toList();
+            final urls = _urlControllers
+                .map((controller) => controller.text.trim())
+                .where((url) => url.isNotEmpty) // Don't add blank URLs
+                .toList();
+
+            if (firstName.isNotEmpty || lastName.isNotEmpty || phoneNumbers.isNotEmpty || emailAddresses.isNotEmpty || urls.isNotEmpty) {
+              widget.onSave({
+                'name': '$firstName $lastName'.trim(),
+                'phone': phoneNumbers,
+                'email': emailAddresses,
+                'url': urls,
+                'photo': _image?.path ?? widget.currentPhoto ?? '',
+              });
+              Navigator.pop(context);
+            } else {
+              // Optionally show a warning message if no data was entered
+              showCupertinoDialog(
+                context: context,
+                builder: (BuildContext context) => CupertinoAlertDialog(
+                  title: const Text('Warning'),
+                  content: const Text('Please enter at least one contact detail.'),
+                  actions: <CupertinoDialogAction>[
+                    CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SizedBox(height: 16),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    _image == null
+                        ? Icon(CupertinoIcons.person_circle_fill,
+                        size: 120, color: CupertinoColors.systemGrey)
+                        : CircleAvatar(
+                      radius: 60,
+                      backgroundImage: FileImage(_image!),
+                    ),
+                    if (_image == null)
+                      Positioned(
+                        bottom: -10,
+                        child: CupertinoButton(
+                          child: Text('Add Photo',
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: CupertinoColors.activeBlue)),
+                          onPressed: _pickImage,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              CupertinoTextField(
+                controller: _firstNameController,
+                placeholder: 'First Name',
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.darkBackgroundGray,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(height: 12),
+              CupertinoTextField(
+                controller: _lastNameController,
+                placeholder: 'Last Name',
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.darkBackgroundGray,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(height: 16),
+              for (var i = 0; i < _phoneControllers.length; i++)
+                _buildAddField(
+                  _phoneControllers,
+                  'phone',
+                  CupertinoIcons.phone_fill,
+                  index: i,
+                  onRemove: () => _removePhoneField(i),
+                  keyboardType: TextInputType.phone,
+                  onChanged: (value) {
+                    _phoneControllers[i].value = TextEditingValue(
+                      text: _formatPhoneNumber(value),
+                      selection: TextSelection.collapsed(offset: _formatPhoneNumber(value).length),
+                    );
+                  },
+                ),
+              _buildAddButton('phone', _addPhoneField),
+              SizedBox(height: 12),
+              for (var i = 0; i < _emailControllers.length; i++)
+                _buildAddField(_emailControllers, 'email',
+                    CupertinoIcons.mail_solid, index: i, onRemove: () => _removeEmailField(i),
+                    keyboardType: TextInputType.emailAddress),
+              _buildAddButton('email', _addEmailField),
+              SizedBox(height: 12),
+              for (var i = 0; i < _urlControllers.length; i++)
+                _buildAddField(_urlControllers, 'url',
+                    CupertinoIcons.link, index: i, onRemove: () => _removeUrlField(i),
+                    keyboardType: TextInputType.url),
+              _buildAddButton('url', _addUrlField),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
